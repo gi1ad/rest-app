@@ -1,4 +1,4 @@
 product_id,product_name,price_id,price
-1,milk,4,44,2020-11-09
-2, juice,3,45,2020-11-09
-3, water,2,56,2020-11-09
+1,milk,4,44
+2, juice,3,45
+3, water,2,56

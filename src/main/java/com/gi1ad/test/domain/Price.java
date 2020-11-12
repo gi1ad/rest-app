@@ -1,24 +1,49 @@
 package com.gi1ad.test.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
+@Table (name = "prices")
 public class Price {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     private Integer id;
 
     private String price;
 
-    private Date date;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate date;
 
-    @OneToOne(optional = false)
+    @JsonIgnore
+    private String inputId;
+
+
+    public String getInputId() {
+        return inputId;
+    }
+
+    public void setInputId(String inputId) {
+        this.inputId = inputId;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name = "product_id",nullable = false)
+    @JsonIgnore
     private Product product;
 
     public Price() {
+
+    }
+
+    public Price(String price, Product product) {
+        this.price = price;
 
     }
 
@@ -30,12 +55,6 @@ public class Price {
         this.product = product;
     }
 
-    public Price(Integer id, String price, Date date, Product product) {
-        this.id = id;
-        this.price = price;
-        this.date = date;
-        this.product = product;
-    }
 
     @Override
     public String toString() {
@@ -62,11 +81,11 @@ public class Price {
         this.price = price;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 }

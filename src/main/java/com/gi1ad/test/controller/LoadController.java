@@ -1,25 +1,25 @@
 package com.gi1ad.test.controller;
 
-import com.gi1ad.test.domain.Price;
+import com.gi1ad.test.domain.Product;
 import com.gi1ad.test.repository.PriceRepository;
 import com.gi1ad.test.repository.ProductRepository;
-import org.springframework.batch.core.*;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
+import com.gi1ad.test.service.ProductService;
+import com.gi1ad.test.service.ProductServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/load")
+
+@RequestMapping("/products")
 public class LoadController {
+
+    @Autowired
+    ProductServiceImpl service;
 
     @Autowired
     ProductRepository productRepository;
@@ -28,23 +28,33 @@ public class LoadController {
     PriceRepository priceRepository;
 
     @Autowired
-    JobLauncher jobLauncher;
+    ProductService priceService;
 
-    @Autowired
-    Job job;
 
-    @GetMapping
-    public BatchStatus load() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
-        Map<String,JobParameter> map = new HashMap<>();
-        map.put("time",new JobParameter(System.currentTimeMillis()));
-        JobParameters jobParameter = new JobParameters(map);
-        JobExecution jobExecution = jobLauncher.run(job,jobParameter);
-        System.out.println("Batch is running");
-        while (jobExecution.isRunning()){
-            System.out.println("...");
-        }
-        System.out.println("Data load " + jobExecution.getStatus());
-        return jobExecution.getStatus();
+    @GetMapping("/load")
+    public void load() throws IOException {
+        service.saveData();
+    }
+
+
+    @GetMapping()
+    public List<Product> getProducts(@RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+        return productRepository.findByDate(date);
+    }
+
+
+    @GetMapping("/statistics")
+    @ResponseBody
+    public String getCount() {
+        service.updateProduct();
+        return "Database contains : " + productRepository.count() + " products";
+    }
+
+    @GetMapping("/changes")
+    public String getNumberOfChangesDB(){
+        return "\n" +
+                "Frequency of changes in the database : " + priceService.count(true);
+
     }
 
 
